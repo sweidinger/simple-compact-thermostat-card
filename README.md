@@ -25,6 +25,8 @@ A clean, information-dense thermostat card for Home Assistant — three compact 
 |---|---|
 | **🎨 Three-row layout** | Status header, big current temp + setpoint controls, HVAC mode strip, preset + fan row. Everything important in one glance. |
 | **🌡️ Dual setpoint** | Auto / heat_cool entities show heat and cool setpoints inline, color-coded, with single-tap adjustment. |
+| **💨 CO₂ + humidity sub-stats** | Auto-discovers air-quality sensors on the same device as your climate entity and shows them under the current temp. Values turn red when above your configurable thresholds (1000 ppm CO₂ and 60 % RH by default). |
+| **👥 Occupancy detection** | If your remote sensors expose an `occupancy` binary sensor, the room name is bolded whenever someone is in the room. |
 | **🌤️ Auto-discovered outside temp** | Reads from a `weather.*` entity on the same device. Override with any `sensor.*` if you prefer your own forecast. |
 | **🏠 Auto-discovered room sensors** | Ecobee remote sensors (and any integration exposing `available_sensors`) appear in a grid at the bottom. The ones contributing to the current reading are highlighted. |
 | **⚡ Optimistic UI** | Tap a button — the card flips immediately, doesn't wait for the next integration poll. Falls back to the real state if the change doesn't stick. |

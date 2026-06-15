@@ -4,3 +4,6 @@ node_modules/
 .vscode/
 .idea/
 *.tsbuildinfo
+
+# Local-only deploy helper (contains personal HA host + path)
+deploy.ps1

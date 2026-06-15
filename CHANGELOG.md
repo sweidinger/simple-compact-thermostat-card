@@ -36,3 +36,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Known limitations
 - Heat and cool setpoints in dual mode move together with `+`/`−`. Independent control is planned for a future release.
 - The card relies on the climate entity's `available_sensors` attribute for the room-sensor row. Integrations that don't expose this won't show the row.
+
+[0.3.0]: https://github.com/priyam13coding/simple-compact-thermostat-card/releases/tag/v0.3.0
+[0.2.0]: https://github.com/priyam13coding/simple-compact-thermostat-card/releases/tag/v0.2.0
