@@ -90,6 +90,7 @@ Everything else — outside temp, room sensors, preset list, fan modes — is di
 | `sensor_excludes`     | string[]  | `["Thermostat"]`           | Sensor names to skip in the room-sensor row.                      |
 | `sensor_aliases`      | object    | `{}`                       | `{ "Original Name": "Short Label" }` to rename a cell.            |
 | `sensor_occupancy`    | object    | `{}`                       | `{ "Original Name": "binary_sensor.x_occupancy" }` to manually map a sensor to its occupancy binary_sensor. Auto-discovered if omitted. |
+| `room_sensors`        | list      | (none)                     | Manual sensor list. When set, replaces auto-discovery — use this when your climate integration doesn't expose `available_sensors` (e.g. Ecobee 3 Lite, non-Ecobee) or when you want to pull in third-party Zigbee/ESPHome sensors. See [Manual room sensors](#manual-room-sensors). |
 | `co2_entity`          | string    | (auto)                     | A `sensor.*` for CO₂ ppm. Defaults to the sensor with `device_class: carbon_dioxide` on the same device as the climate entity. |
 | `humidity_entity`     | string    | (auto)                     | A `sensor.*` for relative humidity. Defaults to the sensor with `device_class: humidity` on the same device. |
 | `show_co2`            | boolean   | `true`                     | Set `false` to hide the CO₂ stat even when one is found.          |
@@ -191,6 +192,27 @@ If your climate entity exposes an `available_sensors` attribute (Ecobee, Honeywe
 2. Finds the matching `sensor.*` temperature entity on the same device, with `_2`/`_3` disambiguation for duplicates.
 3. Highlights cells whose name appears in `active_sensors` — tinted background plus mode-colored temperature.
 4. Auto-excludes the main thermostat sensor so the value isn't shown twice.
+
+### Manual room sensors
+
+If your climate integration doesn't expose `available_sensors` (e.g. **Ecobee 3 Lite**, most non-Ecobee thermostats), or you want to use any temperature sensor regardless of integration, list them explicitly with `room_sensors`. When this option is set, auto-discovery is skipped entirely.
+
+```yaml
+type: custom:simple-compact-thermostat
+entity: climate.thermostat
+room_sensors:
+  - name: Living Room
+    entity: sensor.living_room_temperature
+    occupancy_entity: binary_sensor.living_room_motion   # optional — bolds the name when occupied
+  - name: Bedroom
+    entity: sensor.aqara_bedroom_temperature
+    short: Bedroom                                       # optional — cell label
+  - name: Office
+    entity: sensor.esphome_office_temperature
+    occupancy_entity: binary_sensor.aqara_office_motion
+```
+
+Each entry takes a `name` (display label + matched against the climate entity's `active_sensors` attribute for highlighting), an `entity` (any `sensor.*` providing temperature), and optionally an `occupancy_entity` (any `binary_sensor.*` — Aqara/Zigbee/ESPHome/etc.) plus a `short` alias.
 
 ---
 

@@ -214,9 +214,23 @@ export class SimpleCompactThermostatCard extends LitElement {
     `;
   }
 
-  // Parse climate.attributes.available_sensors, resolve each name to a real
-  // sensor entity on the same device, apply user excludes/aliases.
+  // Resolve the displayed sensors. Manual room_sensors in config takes priority
+  // over auto-discovery; this is the escape hatch for integrations that don't
+  // expose available_sensors (e.g. Ecobee 3 Lite, non-Ecobee climate entities)
+  // and for users mixing in third-party Zigbee/ESPHome sensors.
   private _discoverSensors(stateObj: any): DiscoveredSensor[] {
+    const manual = this._config.room_sensors;
+    if (Array.isArray(manual) && manual.length > 0) {
+      return manual
+        .filter(m => m && m.name && m.entity)
+        .map(m => ({
+          name: m.name,
+          entity: m.entity,
+          occupancyEntity: m.occupancy_entity,
+          short: m.short,
+        }));
+    }
+
     if (!stateObj) return [];
     const available = stateObj.attributes?.available_sensors;
     if (!Array.isArray(available)) return [];

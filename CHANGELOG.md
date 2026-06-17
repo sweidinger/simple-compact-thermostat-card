@@ -4,6 +4,21 @@ All notable changes to **Simple Compact Thermostat** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.3.1] — 2026-06-16
+
+### Added
+- `room_sensors` YAML option for manual sensor specification. When set, it takes priority over auto-discovery and lets you pull in any temperature sensor — Ecobee, Aqara/Zigbee, ESPHome, generic — with an optional `occupancy_entity` to pair each room with its motion/presence sensor for the bold-when-occupied highlighting.
+  ```yaml
+  room_sensors:
+    - name: Living Room
+      entity: sensor.living_room_temperature
+      occupancy_entity: binary_sensor.living_room_motion
+    - name: Bedroom
+      entity: sensor.aqara_bedroom_temperature
+      short: Bedroom
+  ```
+  Resolves the case where a climate integration doesn't expose `available_sensors` (e.g. Ecobee 3 Lite, most non-Ecobee thermostats).
+
 ## [0.3.0] — 2026-06-15
 
 ### Added
@@ -37,5 +52,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Heat and cool setpoints in dual mode move together with `+`/`−`. Independent control is planned for a future release.
 - The card relies on the climate entity's `available_sensors` attribute for the room-sensor row. Integrations that don't expose this won't show the row.
 
+[0.3.1]: https://github.com/priyam13coding/simple-compact-thermostat-card/releases/tag/v0.3.1
 [0.3.0]: https://github.com/priyam13coding/simple-compact-thermostat-card/releases/tag/v0.3.0
 [0.2.0]: https://github.com/priyam13coding/simple-compact-thermostat-card/releases/tag/v0.2.0
