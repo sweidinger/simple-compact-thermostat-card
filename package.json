@@ -1,6 +1,6 @@
 {
   "name": "simple-compact-thermostat-card",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "type": "module",
   "description": "A compact, three-row thermostat card for Home Assistant.",
   "keywords": [

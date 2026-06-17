@@ -4,6 +4,11 @@ All notable changes to **Simple Compact Thermostat** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.3.2] — 2026-06-17
+
+### Fixed
+- "SET" corner label was colliding with the HEAT/COOL tags in dual setpoint mode at narrow widths, making the SET text look squashed or missing. Hidden in dual mode — the HEAT/COOL tags already make it clear the values are the setpoint. Resolves [#4](https://github.com/priyam13coding/simple-compact-thermostat-card/issues/4).
+
 ## [0.3.1] — 2026-06-16
 
 ### Added
@@ -52,6 +57,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Heat and cool setpoints in dual mode move together with `+`/`−`. Independent control is planned for a future release.
 - The card relies on the climate entity's `available_sensors` attribute for the room-sensor row. Integrations that don't expose this won't show the row.
 
+[0.3.2]: https://github.com/priyam13coding/simple-compact-thermostat-card/releases/tag/v0.3.2
 [0.3.1]: https://github.com/priyam13coding/simple-compact-thermostat-card/releases/tag/v0.3.1
 [0.3.0]: https://github.com/priyam13coding/simple-compact-thermostat-card/releases/tag/v0.3.0
 [0.2.0]: https://github.com/priyam13coding/simple-compact-thermostat-card/releases/tag/v0.2.0

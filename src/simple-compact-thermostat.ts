@@ -1107,6 +1107,11 @@ export class SimpleCompactThermostatCard extends LitElement {
       justify-content: center;
       padding: 6px 12px 5px;
     }
+    /* HEAT and COOL tags already communicate this is the setpoint; the SET
+       corner label collides with them at narrow widths. Drop it in dual mode. */
+    .right-cell.dual .corner-label {
+      display: none;
+    }
     .dual-inline {
       display: flex;
       align-items: flex-end;
