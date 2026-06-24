@@ -8,7 +8,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 - **GUI editor.** When the card is added or edited via the dashboard, a visual form replaces the YAML editor by default. Covers the simple options — entity pickers, toggles, numbers, the air-quality sensor section. Resolves [#1](https://github.com/priyam13coding/simple-compact-thermostat-card/issues/1).
-  Advanced options (`room_sensors`, `sensor_aliases`, `sensor_occupancy`, `sensor_excludes`, `hvac_modes`, `fan_modes`) stay YAML-only — use the **Show Code Editor** toggle for those.
+  - Editor prefills auto-discovered values for `outside_temp_entity`, `co2_entity`, `humidity_entity` so the form reflects what the card is actually using, even when those fields aren't in the YAML.
+  - Embedded YAML editor at the bottom of the form for advanced options (`room_sensors`, `additional_room_sensors`, `sensor_aliases`, `sensor_occupancy`, `sensor_excludes`, `hvac_modes`, `fan_modes`) — no need to switch to **Show Code Editor** just to tweak those.
+- **`additional_room_sensors`** config option. Sensors listed here are appended to the auto-discovered list (or to a `room_sensors` override) and flow into the same grid as the rest — perfect for mixing in a Zigbee/Aqara/ESPHome sensor alongside Ecobee's remote sensors.
+  ```yaml
+  additional_room_sensors:
+    - name: Office
+      entity: sensor.aqara_office_temperature
+      occupancy_entity: binary_sensor.aqara_office_motion
+  ```
 
 ## [0.3.2] — 2026-06-17
 

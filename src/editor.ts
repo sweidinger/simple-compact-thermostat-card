@@ -105,6 +105,7 @@ const DEFAULTS: Record<string, unknown> = {
 // to the full "Show Code Editor" view just for these.
 const ADVANCED_KEYS = [
   "room_sensors",
+  "additional_room_sensors",
   "sensor_aliases",
   "sensor_occupancy",
   "sensor_excludes",
@@ -203,9 +204,9 @@ export class SimpleCompactThermostatEditor extends LitElement {
       <div class="advanced">
         <div class="advanced-title">Advanced YAML</div>
         <div class="advanced-desc">
-          <code>room_sensors</code>, <code>sensor_aliases</code>,
-          <code>sensor_occupancy</code>, <code>sensor_excludes</code>,
-          <code>hvac_modes</code>, <code>fan_modes</code>
+          <code>room_sensors</code>, <code>additional_room_sensors</code>,
+          <code>sensor_aliases</code>, <code>sensor_occupancy</code>,
+          <code>sensor_excludes</code>, <code>hvac_modes</code>, <code>fan_modes</code>
         </div>
         <ha-yaml-editor
           .defaultValue=${this._advancedConfig()}

@@ -18,6 +18,7 @@ export interface SimpleCompactThermostatConfig extends LovelaceCardConfig {
   sensor_aliases?: Record<string, string>;         // Rename a sensor in the card label
   sensor_occupancy?: Record<string, string>;       // Manual map: { "Sensor Name": "binary_sensor.x_occupancy" }
   room_sensors?: ManualRoomSensor[];               // Manual sensor list — when set, replaces auto-discovery entirely
+  additional_room_sensors?: ManualRoomSensor[];    // Sensors appended to whichever list (auto or room_sensors) is in effect
 
   // CO2 + humidity sub-stats under the current temperature
   co2_entity?: string;                             // Override auto-discovery (sensor.* with device_class=carbon_dioxide)

@@ -238,26 +238,45 @@ export class SimpleCompactThermostatCard extends LitElement {
     `;
   }
 
+  // Convert a manual config entry into the internal DiscoveredSensor shape.
+  private _manualToDiscovered(m: any): DiscoveredSensor | null {
+    if (!m || !m.name || !m.entity) return null;
+    return {
+      name: m.name,
+      entity: m.entity,
+      occupancyEntity: m.occupancy_entity,
+      short: m.short,
+    };
+  }
+
+  // Append additional_room_sensors (if any) to whatever sensor list was
+  // already resolved. Render then flows them all into the same grid.
+  private _withAdditional(base: DiscoveredSensor[]): DiscoveredSensor[] {
+    const extra = this._config.additional_room_sensors;
+    if (!Array.isArray(extra) || extra.length === 0) return base;
+    const extras = extra
+      .map(m => this._manualToDiscovered(m))
+      .filter((s): s is DiscoveredSensor => s !== null);
+    return [...base, ...extras];
+  }
+
   // Resolve the displayed sensors. Manual room_sensors in config takes priority
   // over auto-discovery; this is the escape hatch for integrations that don't
   // expose available_sensors (e.g. Ecobee 3 Lite, non-Ecobee climate entities)
   // and for users mixing in third-party Zigbee/ESPHome sensors.
+  // additional_room_sensors is always appended on top.
   private _discoverSensors(stateObj: any): DiscoveredSensor[] {
     const manual = this._config.room_sensors;
     if (Array.isArray(manual) && manual.length > 0) {
-      return manual
-        .filter(m => m && m.name && m.entity)
-        .map(m => ({
-          name: m.name,
-          entity: m.entity,
-          occupancyEntity: m.occupancy_entity,
-          short: m.short,
-        }));
+      const base = manual
+        .map(m => this._manualToDiscovered(m))
+        .filter((s): s is DiscoveredSensor => s !== null);
+      return this._withAdditional(base);
     }
 
-    if (!stateObj) return [];
+    if (!stateObj) return this._withAdditional([]);
     const available = stateObj.attributes?.available_sensors;
-    if (!Array.isArray(available)) return [];
+    if (!Array.isArray(available)) return this._withAdditional([]);
 
     const excludes = new Set(
       (this._config.sensor_excludes ?? []).map(s => s.toLowerCase())
@@ -292,7 +311,7 @@ export class SimpleCompactThermostatCard extends LitElement {
 
       result.push({ name, entity: entityId, short: aliases[name], occupancyEntity });
     }
-    return result;
+    return this._withAdditional(result);
   }
 
   // Find binary_sensor entities with device_class=occupancy on the same device
