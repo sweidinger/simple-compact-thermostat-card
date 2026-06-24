@@ -84,6 +84,22 @@ const SCHEMA = [
   },
 ];
 
+// Runtime defaults — must match the values used in the card's setConfig and
+// renderers. The editor fills these in when displaying an existing config so
+// every toggle/number reflects what the card is actually using, then strips
+// them back out before saving so the YAML stays minimal.
+const DEFAULTS: Record<string, unknown> = {
+  show_preset:                  true,
+  show_fan:                     true,
+  show_sensor_data:             true,
+  show_co2:                     true,
+  show_humidity:                true,
+  step:                         1,
+  room_sensor_columns:          4,
+  co2_warning_threshold:        1000,
+  humidity_warning_threshold:   60,
+};
+
 @customElement(EDITOR_NAME)
 export class SimpleCompactThermostatEditor extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
@@ -96,10 +112,16 @@ export class SimpleCompactThermostatEditor extends LitElement {
   protected render(): TemplateResult {
     if (!this.hass || !this._config) return html``;
 
+    // Show effective values: user's config wins, defaults fill the gaps.
+    // This way the form prepopulates with the runtime state (e.g. show_preset
+    // toggle reads ON when the YAML doesn't set it, matching how the card
+    // actually behaves) instead of showing toggles as unchecked / numbers blank.
+    const displayData = { ...DEFAULTS, ...this._config };
+
     return html`
       <ha-form
         .hass=${this.hass}
-        .data=${this._config}
+        .data=${displayData}
         .schema=${SCHEMA}
         .computeLabel=${this._computeLabel}
         @value-changed=${this._valueChanged}
@@ -125,6 +147,14 @@ export class SimpleCompactThermostatEditor extends LitElement {
     for (const key of Object.keys(merged)) {
       if (merged[key] === "" || merged[key] === undefined) {
         delete merged[key];
+      }
+    }
+
+    // Strip values that match runtime defaults so a card whose options match
+    // the defaults doesn't accumulate redundant YAML keys after editing.
+    for (const [k, defaultVal] of Object.entries(DEFAULTS)) {
+      if (merged[k] === defaultVal) {
+        delete merged[k];
       }
     }
 
