@@ -10,7 +10,7 @@ import {
   FAN_ICONS,
   FAN_LABELS,
 } from "./const";
-import { DiscoveredSensor, SimpleCompactThermostatConfig } from "./types";
+import { DiscoveredSensor, RoomStat, SimpleCompactThermostatConfig } from "./types";
 
 // Side-effect import: registers <simple-compact-thermostat-editor> so the
 // dashboard editor can find it via getConfigElement() below. We do this here
@@ -35,6 +35,10 @@ console.info(
   "color: #58a6ff; background: white; font-weight: 700;",
 );
 /* eslint-enable no-console */
+
+// Entity-id suffixes tried when guessing a sensor from a room name slug.
+const TEMPERATURE_SUFFIXES = ["_temperature", "_temperature_2", "_temperature_3", "_temperature_4"];
+const HUMIDITY_SUFFIXES    = ["_humidity", "_humidity_2", "_humidity_3", "_humidity_4"];
 
 @customElement(CARD_NAME)
 export class SimpleCompactThermostatCard extends LitElement {
@@ -166,6 +170,12 @@ export class SimpleCompactThermostatCard extends LitElement {
         if (s.occupancyEntity
             && oldHass.states[s.occupancyEntity]
                !== this.hass.states[s.occupancyEntity]) return true;
+        if (s.humidityEntity
+            && oldHass.states[s.humidityEntity]
+               !== this.hass.states[s.humidityEntity]) return true;
+        for (const st of [...(s.stats ?? []), ...(s.tooltipSensors ?? [])]) {
+          if (oldHass.states[st.entity] !== this.hass.states[st.entity]) return true;
+        }
       }
     }
     return false;
@@ -225,11 +235,12 @@ export class SimpleCompactThermostatCard extends LitElement {
             <div
               class="sensor-cell ${isActive ? "active" : ""} ${isOccupied ? "occupied" : ""}"
               style=${isLastCol ? "border-right: none;" : ""}
-              title=${s.name}${isOccupied ? " (occupied)" : ""}
+              title=${this._cellTooltip(s, isOccupied)}
             >
               <div class="sensor-temp">
-                ${isNaN(raw) ? "—" : this._round(raw)}<span class="sensor-unit">°${unit}</span>
+                ${isNaN(raw) ? "—" : this._round(raw)}<span class="sensor-unit">°${unit}</span>${this._renderCellHumidity(s)}
               </div>
+              ${this._renderCellStats(s)}
               <div class="sensor-name">${label}</div>
             </div>
           `;
@@ -238,13 +249,83 @@ export class SimpleCompactThermostatCard extends LitElement {
     `;
   }
 
+  // Small "47%" chip rendered right after the room temperature.
+  private _renderCellHumidity(s: DiscoveredSensor): TemplateResult | typeof nothing {
+    if (!s.humidityEntity) return nothing;
+    const st = this.hass.states[s.humidityEntity];
+    const v = st ? parseFloat(st.state) : NaN;
+    if (isNaN(v)) return nothing;
+    const warn = v > (this._config.humidity_warning_threshold ?? 60);
+    return html`<span class="sensor-hum ${warn ? "warn" : ""}">${Math.round(v)}%</span>`;
+  }
+
+  // Extra per-room stats line (PM2.5, CO2, mold %, …) under the temperature.
+  private _renderCellStats(s: DiscoveredSensor): TemplateResult | typeof nothing {
+    const stats = (s.stats ?? [])
+      .map(st => this._readStat(st))
+      .filter((x): x is { text: string; warn: boolean } => x !== null);
+    if (stats.length === 0) return nothing;
+    return html`
+      <div class="sensor-stats">
+        ${stats.map(st => html`<span class="sensor-stat ${st.warn ? "warn" : ""}">${st.text}</span>`)}
+      </div>
+    `;
+  }
+
+  // Resolve one RoomStat to display text + warn flag. Non-numeric states
+  // (e.g. "excellent") render as-is without a unit. Returns null when the
+  // entity is missing/unavailable so the cell doesn't fill up with dashes.
+  private _readStat(st: RoomStat): { text: string; warn: boolean } | null {
+    const so = this.hass.states[st.entity];
+    if (!so || so.state === "unavailable" || so.state === "unknown") return null;
+    const num = parseFloat(so.state);
+    const isNum = !isNaN(num);
+    const unit = st.unit !== undefined
+      ? st.unit
+      : (isNum ? so.attributes?.unit_of_measurement ?? "" : "");
+    const value = isNum ? String(Math.round(num * 10) / 10) : so.state;
+    const warn = isNum
+      && ((st.warn_above != null && num > st.warn_above)
+       || (st.warn_below != null && num < st.warn_below));
+    const label = st.label ? `${st.label} ` : "";
+    return { text: `${label}${value}${unit ? ` ${unit}` : ""}`, warn };
+  }
+
+  // Native hover tooltip for a sensor cell: room name plus any
+  // tooltip_sensors values, one per line.
+  private _cellTooltip(s: DiscoveredSensor, isOccupied: boolean): string {
+    const lines = [s.name + (isOccupied ? " (occupied)" : "")];
+    for (const st of s.tooltipSensors ?? []) {
+      const so = this.hass.states[st.entity];
+      if (!so || so.state === "unavailable" || so.state === "unknown") continue;
+      const num = parseFloat(so.state);
+      const isNum = !isNaN(num);
+      const label = st.label
+        ?? so.attributes?.friendly_name
+        ?? st.entity;
+      const unit = st.unit !== undefined
+        ? st.unit
+        : (isNum ? so.attributes?.unit_of_measurement ?? "" : "");
+      const value = isNum ? String(Math.round(num * 10) / 10) : so.state;
+      lines.push(`${label}: ${value}${unit ? ` ${unit}` : ""}`);
+    }
+    return lines.join("\n");
+  }
+
   // Convert a manual config entry into the internal DiscoveredSensor shape.
   private _manualToDiscovered(m: any): DiscoveredSensor | null {
     if (!m || !m.name || !m.entity) return null;
+    const cleanStats = (arr: any): RoomStat[] | undefined =>
+      Array.isArray(arr)
+        ? arr.filter((x: any) => x && typeof x.entity === "string")
+        : undefined;
     return {
       name: m.name,
       entity: m.entity,
       occupancyEntity: m.occupancy_entity,
+      humidityEntity: m.humidity_entity,
+      stats: cleanStats(m.stats),
+      tooltipSensors: cleanStats(m.tooltip_sensors),
       short: m.short,
     };
   }
@@ -283,10 +364,13 @@ export class SimpleCompactThermostatCard extends LitElement {
     );
     const aliases = this._config.sensor_aliases ?? {};
     const occupancyOverrides = this._config.sensor_occupancy ?? {};
+    const humidityOverrides = this._config.sensor_humidity ?? {};
     const candidates = this._findRelatedTempSensors(this._config.entity);
     const occCandidates = this._findRelatedOccupancySensors(this._config.entity);
+    const humCandidates = this._findRelatedHumiditySensors(this._config.entity);
     const used = new Set<string>();
     const usedOcc = new Set<string>();
+    const usedHum = new Set<string>();
     const result: DiscoveredSensor[] = [];
 
     for (const item of available) {
@@ -309,9 +393,48 @@ export class SimpleCompactThermostatCard extends LitElement {
         }
       }
 
-      result.push({ name, entity: entityId, short: aliases[name], occupancyEntity });
+      let humidityEntity: string | undefined;
+      if (humidityOverrides[name]) {
+        humidityEntity = humidityOverrides[name];
+      } else {
+        const matched = this._matchSensorByName(
+          name, humCandidates, usedHum, HUMIDITY_SUFFIXES);
+        if (matched) {
+          usedHum.add(matched);
+          humidityEntity = matched;
+        }
+      }
+
+      result.push({ name, entity: entityId, short: aliases[name], occupancyEntity, humidityEntity });
     }
     return this._withAdditional(result);
+  }
+
+  // Find humidity sensor entities on the same device as the climate entity
+  // (or any if the registry is unavailable).
+  private _findRelatedHumiditySensors(climateId: string): string[] {
+    const reg = (this.hass as any).entities as
+      | Record<string, { device_id?: string }>
+      | undefined;
+
+    const isHumSensor = (eid: string): boolean => {
+      if (!eid.startsWith("sensor.")) return false;
+      const st = this.hass.states[eid];
+      if (!st) return false;
+      return st.attributes.device_class === "humidity"
+          || eid.endsWith("_humidity");
+    };
+
+    if (reg) {
+      const climate = reg[climateId];
+      const deviceId = climate?.device_id;
+      if (deviceId) {
+        return Object.keys(reg).filter(
+          eid => reg[eid].device_id === deviceId && isHumSensor(eid)
+        );
+      }
+    }
+    return Object.keys(this.hass.states).filter(isHumSensor);
   }
 
   // Find binary_sensor entities with device_class=occupancy on the same device
@@ -411,6 +534,7 @@ export class SimpleCompactThermostatCard extends LitElement {
     name: string,
     candidates: string[],
     used: Set<string>,
+    suffixes: string[] = TEMPERATURE_SUFFIXES,
   ): string | null {
     const wanted = name.toLowerCase();
 
@@ -428,7 +552,7 @@ export class SimpleCompactThermostatCard extends LitElement {
     }
     // 3. Slug-based entity_id guess with _2/_3 disambiguation for duplicates
     const slug = wanted.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
-    for (const suffix of ["_temperature", "_temperature_2", "_temperature_3", "_temperature_4"]) {
+    for (const suffix of suffixes) {
       const eid = `sensor.${slug}${suffix}`;
       if (this.hass.states[eid] && !used.has(eid)) return eid;
     }
@@ -1406,6 +1530,34 @@ export class SimpleCompactThermostatCard extends LitElement {
       font-size: 0.55em;
       color: var(--sct-text-secondary);
       margin-left: 1px;
+    }
+    .sensor-hum {
+      font-size: 0.55em;
+      color: var(--sct-text-secondary);
+      margin-left: 4px;
+      font-weight: 400;
+      letter-spacing: 0;
+    }
+    .sensor-hum.warn {
+      color: var(--error-color, #f44336);
+      font-weight: 600;
+    }
+    .sensor-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1px 7px;
+      font-size: 9px;
+      line-height: 1.3;
+      color: var(--sct-text-secondary);
+      font-family: var(--sct-mono);
+      min-width: 0;
+    }
+    .sensor-stat {
+      white-space: nowrap;
+    }
+    .sensor-stat.warn {
+      color: var(--error-color, #f44336);
+      font-weight: 600;
     }
     .sensor-name {
       color: var(--sct-text-secondary);

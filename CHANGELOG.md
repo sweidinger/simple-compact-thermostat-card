@@ -4,6 +4,13 @@ All notable changes to **Simple Compact Thermostat** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] — 2026-07-03
+
+### Added
+- **Per-room humidity.** Each room-sensor entry can now name a `humidity_entity`; the value renders as a small percentage right next to the room temperature and turns red above `humidity_warning_threshold`. For auto-discovered (Ecobee-style) sensors, humidity is matched automatically on the same device, with a `sensor_humidity` map for manual overrides — same pattern as `sensor_occupancy`.
+- **Per-room `stats`.** Any extra measurements — PM2.5, CO₂, VOC, mold indicator, air-quality index — can be listed per room and render in a compact line under the temperature. Each stat takes `entity`, optional `label`, optional `unit` override (`""` hides it), and `warn_above` / `warn_below` thresholds that turn the value red. Non-numeric states (e.g. `excellent`) render as-is.
+- **Per-room `tooltip_sensors`.** Same shape as `stats`, but the values appear only in the cell's hover tooltip — for the long tail of measurements (pressure, PM1/PM10, indexes) that shouldn't crowd the cell.
+
 ## [0.4.0] — 2026-06-24
 
 ### Added

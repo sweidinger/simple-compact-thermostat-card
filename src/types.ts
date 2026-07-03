@@ -17,6 +17,7 @@ export interface SimpleCompactThermostatConfig extends LovelaceCardConfig {
   sensor_excludes?: string[];                      // Names to skip (default ["Thermostat"])
   sensor_aliases?: Record<string, string>;         // Rename a sensor in the card label
   sensor_occupancy?: Record<string, string>;       // Manual map: { "Sensor Name": "binary_sensor.x_occupancy" }
+  sensor_humidity?: Record<string, string>;        // Manual map: { "Sensor Name": "sensor.x_humidity" } (auto-discovered if omitted)
   room_sensors?: ManualRoomSensor[];               // Manual sensor list — when set, replaces auto-discovery entirely
   additional_room_sensors?: ManualRoomSensor[];    // Sensors appended to whichever list (auto or room_sensors) is in effect
 
@@ -29,12 +30,26 @@ export interface SimpleCompactThermostatConfig extends LovelaceCardConfig {
   humidity_warning_threshold?: number;             // % above which humidity is shown in red (default 60)
 }
 
+// A single extra per-room measurement (PM2.5, CO2, VOC, mold %, …).
+// Rendered as a small stat under the room temperature, or — via
+// tooltip_sensors — only in the cell's hover tooltip.
+export interface RoomStat {
+  entity: string;                // sensor.* providing the value
+  label?: string;                // Short label shown before the value (e.g. "PM2,5")
+  unit?: string;                 // Override the sensor's unit ("" hides it)
+  warn_above?: number;           // Render red when numeric value exceeds this
+  warn_below?: number;           // Render red when numeric value falls below this
+}
+
 // Manual room-sensor entry in YAML — lets users use any temperature sensor,
 // not just ones the climate integration exposes in available_sensors.
 export interface ManualRoomSensor {
   name: string;                  // Display label + matched against active_sensors for highlighting
   entity: string;                // sensor.* providing temperature
   occupancy_entity?: string;     // binary_sensor.* for occupancy (optional)
+  humidity_entity?: string;      // sensor.* for relative humidity, shown next to the temp (optional)
+  stats?: RoomStat[];            // Extra measurements rendered in the cell (optional)
+  tooltip_sensors?: RoomStat[];  // Measurements shown only in the hover tooltip (optional)
   short?: string;                // Shorter label for the cell (optional)
 }
 
@@ -43,5 +58,8 @@ export interface DiscoveredSensor {
   name: string;
   entity: string;
   occupancyEntity?: string;
+  humidityEntity?: string;
+  stats?: RoomStat[];
+  tooltipSensors?: RoomStat[];
   short?: string;
 }

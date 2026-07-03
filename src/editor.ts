@@ -108,6 +108,7 @@ const ADVANCED_KEYS = [
   "additional_room_sensors",
   "sensor_aliases",
   "sensor_occupancy",
+  "sensor_humidity",
   "sensor_excludes",
   "hvac_modes",
   "fan_modes",
@@ -206,7 +207,8 @@ export class SimpleCompactThermostatEditor extends LitElement {
         <div class="advanced-desc">
           <code>room_sensors</code>, <code>additional_room_sensors</code>,
           <code>sensor_aliases</code>, <code>sensor_occupancy</code>,
-          <code>sensor_excludes</code>, <code>hvac_modes</code>, <code>fan_modes</code>
+          <code>sensor_humidity</code>, <code>sensor_excludes</code>,
+          <code>hvac_modes</code>, <code>fan_modes</code>
         </div>
         <ha-yaml-editor
           .defaultValue=${this._advancedConfig()}

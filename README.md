@@ -91,6 +91,7 @@ Everything else — outside temp, room sensors, preset list, fan modes — is di
 | `sensor_excludes`     | string[]  | `["Thermostat"]`           | Sensor names to skip in the room-sensor row.                      |
 | `sensor_aliases`      | object    | `{}`                       | `{ "Original Name": "Short Label" }` to rename a cell.            |
 | `sensor_occupancy`    | object    | `{}`                       | `{ "Original Name": "binary_sensor.x_occupancy" }` to manually map a sensor to its occupancy binary_sensor. Auto-discovered if omitted. |
+| `sensor_humidity`     | object    | `{}`                       | `{ "Original Name": "sensor.x_humidity" }` to manually map an auto-discovered room sensor to its humidity sensor. Auto-discovered on the same device if omitted. |
 | `room_sensors`        | list      | (none)                     | Manual sensor list. When set, replaces auto-discovery — use this when your climate integration doesn't expose `available_sensors` (e.g. Ecobee 3 Lite, non-Ecobee) or when you want to pull in third-party Zigbee/ESPHome sensors. See [Manual room sensors](#manual-room-sensors). |
 | `additional_room_sensors` | list  | (none)                     | Extra sensors appended to whichever list (auto-discovered or `room_sensors`) is in effect. Use to add a third-party Zigbee/Aqara/ESPHome sensor alongside Ecobee's remote sensors without losing the auto-discovered ones. Same shape as `room_sensors`. |
 | `co2_entity`          | string    | (auto)                     | A `sensor.*` for CO₂ ppm. Defaults to the sensor with `device_class: carbon_dioxide` on the same device as the climate entity. |
@@ -206,15 +207,31 @@ room_sensors:
   - name: Living Room
     entity: sensor.living_room_temperature
     occupancy_entity: binary_sensor.living_room_motion   # optional — bolds the name when occupied
+    humidity_entity: sensor.living_room_humidity         # optional — small % next to the temp
   - name: Bedroom
     entity: sensor.aqara_bedroom_temperature
     short: Bedroom                                       # optional — cell label
+    stats:                                               # optional — extra values under the temp
+      - entity: sensor.purifier_bedroom_pm25
+        label: PM2.5
+        warn_above: 25
+      - entity: sensor.radon_bedroom_co2
+        label: CO₂
+        unit: ""                                         # hide the sensor's unit
+        warn_above: 1000
+    tooltip_sensors:                                     # optional — values shown only on hover
+      - entity: sensor.radon_bedroom_vocs
+        label: VOC
+      - entity: sensor.radon_bedroom_pressure
+        label: Pressure
   - name: Office
     entity: sensor.esphome_office_temperature
     occupancy_entity: binary_sensor.aqara_office_motion
 ```
 
-Each entry takes a `name` (display label + matched against the climate entity's `active_sensors` attribute for highlighting), an `entity` (any `sensor.*` providing temperature), and optionally an `occupancy_entity` (any `binary_sensor.*` — Aqara/Zigbee/ESPHome/etc.) plus a `short` alias.
+Each entry takes a `name` (display label + matched against the climate entity's `active_sensors` attribute for highlighting), an `entity` (any `sensor.*` providing temperature), and optionally: an `occupancy_entity` (any `binary_sensor.*`), a `humidity_entity` (rendered as a small percentage beside the temperature, red above `humidity_warning_threshold`), a `short` alias, and two stat lists.
+
+`stats` renders extra measurements (PM2.5, CO₂, VOC, mold %, …) in a small line under the temperature; `tooltip_sensors` shows them only in the cell's hover tooltip. Both take the same entry shape: `entity` (required), `label`, `unit` (override; `""` hides it), `warn_above` / `warn_below` (numeric thresholds that turn the value red). Non-numeric states (e.g. `excellent`) render as-is.
 
 ---
 
