@@ -4,6 +4,11 @@ All notable changes to **Simple Compact Thermostat** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.5.1] — 2026-07-03
+
+### Changed
+- Room-sensor cells: the °C unit and the humidity percentage now render at the same size and color as the temperature value itself, so the first line reads as one uniform figure. The extra stats line stays smaller for hierarchy.
+
 ## [0.5.0] — 2026-07-03
 
 ### Added

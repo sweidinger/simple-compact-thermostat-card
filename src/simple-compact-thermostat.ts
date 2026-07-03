@@ -1527,14 +1527,14 @@ export class SimpleCompactThermostatCard extends LitElement {
       color: var(--sct-mode-color);
     }
     .sensor-unit {
-      font-size: 0.55em;
-      color: var(--sct-text-secondary);
+      font-size: 1em;
+      color: inherit;
       margin-left: 1px;
     }
     .sensor-hum {
-      font-size: 0.55em;
-      color: var(--sct-text-secondary);
-      margin-left: 4px;
+      font-size: 1em;
+      color: inherit;
+      margin-left: 6px;
       font-weight: 400;
       letter-spacing: 0;
     }
