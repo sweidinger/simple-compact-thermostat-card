@@ -28,6 +28,26 @@ export interface SimpleCompactThermostatConfig extends LovelaceCardConfig {
   show_humidity?: boolean;                         // Default true if a humidity sensor is found
   co2_warning_threshold?: number;                  // ppm above which CO2 is shown in red (default 1000)
   humidity_warning_threshold?: number;             // % above which humidity is shown in red (default 60)
+
+  // Extra status badges rendered in the header next to "HVAC ✦ MODE"
+  header_badges?: HeaderBadge[];
+}
+
+// Appearance overrides for one state of a header badge.
+export interface HeaderBadgeState {
+  icon?: string;                 // mdi:… icon shown while the entity has this state
+  color?: string;                // CSS color or HA color name (e.g. "yellow", "light-blue")
+  label?: string;                // Text shown instead of the (formatted) state
+}
+
+// A status badge in the header row, e.g. a summer/winter mode sensor.
+export interface HeaderBadge {
+  entity: string;                // Any entity; its state is shown
+  name?: string;                 // Optional prefix label (e.g. "Modus")
+  icon?: string;                 // Default icon (falls back to the entity's icon)
+  color?: string;                // Default color
+  states?: Record<string, HeaderBadgeState>; // Per-state overrides, keyed by raw state
+  tap_action?: "more-info" | "none"; // Default "more-info"
 }
 
 // A single extra per-room measurement (PM2.5, CO2, VOC, mold %, …).

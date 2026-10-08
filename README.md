@@ -100,6 +100,7 @@ Everything else — outside temp, room sensors, preset list, fan modes — is di
 | `show_humidity`       | boolean   | `true`                     | Set `false` to hide the humidity stat even when one is found.     |
 | `co2_warning_threshold` | number  | `1000`                     | CO₂ value (in the sensor's unit, normally ppm) above which the number renders red. |
 | `humidity_warning_threshold` | number | `60`                  | Humidity % above which the number renders red.                    |
+| `header_badges`       | list      | (none)                     | Extra status badges in the header next to `HVAC ✦ MODE` — any entity, with icon and color per state. See [Header badges](#header-badges). |
 
 ### Full example
 
@@ -117,6 +118,37 @@ sensor_excludes:
 sensor_aliases:
   "Second Bedroom Temp": "2nd BR"
 ```
+
+### Header badges
+
+Show any entity's state right in the header row, separated from `HVAC ✦ MODE` by a thin divider — for example a summer/winter mode sensor, a window contact or an away flag. Each badge can switch icon, color and text per state. Tapping a badge opens the entity's more-info dialog (set `tap_action: none` to disable).
+
+```yaml
+header_badges:
+  - entity: sensor.heating_season
+    states:
+      Summer:
+        icon: mdi:weather-sunny
+        color: yellow          # HA color name or any CSS color
+      Winter:
+        icon: mdi:snowflake
+        color: light-blue
+  - entity: binary_sensor.living_room_window
+    name: Window               # optional prefix label
+    icon: mdi:window-open-variant
+    states:
+      "on":  { color: "#f44336", label: open }
+      "off": { label: closed }
+```
+
+| Key          | Type   | Default                  | Description |
+|--------------|--------|--------------------------|-------------|
+| `entity`     | string | **required**             | Any entity; its (formatted) state is shown. |
+| `name`       | string | (none)                   | Optional label shown before the state. |
+| `icon`       | string | (entity's icon)          | Default `mdi:` icon. |
+| `color`      | string | secondary text color     | Default color — an HA color name (`yellow`, `light-blue`, …) maps to the theme's `--<name>-color`, anything else is used as CSS. |
+| `states`     | object | (none)                   | Per-state overrides keyed by the raw state: `icon`, `color`, `label`. |
+| `tap_action` | string | `more-info`              | `more-info` or `none`. |
 
 ---
 

@@ -4,6 +4,11 @@ All notable changes to **Simple Compact Thermostat** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] — 2026-10-09
+
+### Added
+- **Header badges.** New `header_badges` option shows any entity's state in the header row next to `HVAC ✦ MODE`, behind a thin divider. Per-state `icon`, `color` and `label` overrides (e.g. a sun in yellow for summer mode, a snowflake in light blue for winter mode); colors accept Home Assistant color names or any CSS color. Tapping a badge opens the more-info dialog (`tap_action: none` disables it). Also editable in the GUI editor's advanced YAML section.
+
 ## [0.5.1] — 2026-07-03
 
 ### Changed

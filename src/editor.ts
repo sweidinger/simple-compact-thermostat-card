@@ -112,6 +112,7 @@ const ADVANCED_KEYS = [
   "sensor_excludes",
   "hvac_modes",
   "fan_modes",
+  "header_badges",
 ] as const;
 
 @customElement(EDITOR_NAME)

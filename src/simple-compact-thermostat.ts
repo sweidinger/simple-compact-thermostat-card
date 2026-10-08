@@ -10,7 +10,7 @@ import {
   FAN_ICONS,
   FAN_LABELS,
 } from "./const";
-import { DiscoveredSensor, RoomStat, SimpleCompactThermostatConfig } from "./types";
+import { DiscoveredSensor, HeaderBadge, RoomStat, SimpleCompactThermostatConfig } from "./types";
 
 // Side-effect import: registers <simple-compact-thermostat-editor> so the
 // dashboard editor can find it via getConfigElement() below. We do this here
@@ -162,6 +162,9 @@ export class SimpleCompactThermostatCard extends LitElement {
 
     for (const eid of [this._getCo2Entity(), this._getHumidityEntity()]) {
       if (eid && oldHass.states[eid] !== this.hass.states[eid]) return true;
+    }
+    for (const b of this._config.header_badges ?? []) {
+      if (b?.entity && oldHass.states[b.entity] !== this.hass.states[b.entity]) return true;
     }
     if (this._config.show_sensor_data !== false) {
       const climate = this.hass.states[this._config.entity];
@@ -705,8 +708,51 @@ export class SimpleCompactThermostatCard extends LitElement {
         <span class="header-text">HVAC</span>
         <span class="header-sep">✦</span>
         <span class="header-mode">${label.toUpperCase()}</span>
+        ${(this._config.header_badges ?? []).map((b) => this._renderHeaderBadge(b))}
       </div>
     `;
+  }
+
+  private _renderHeaderBadge(badge: HeaderBadge): TemplateResult | typeof nothing {
+    if (!badge?.entity) return nothing;
+    const stateObj = this.hass.states[badge.entity];
+    if (!stateObj) return nothing;
+    const override = badge.states?.[stateObj.state] ?? {};
+    const icon = override.icon ?? badge.icon ?? stateObj.attributes.icon;
+    const color = this._cssColor(override.color ?? badge.color);
+    const formatted = (this.hass as any).formatEntityState
+      ? (this.hass as any).formatEntityState(stateObj)
+      : stateObj.state;
+    const text = override.label ?? formatted;
+    const clickable = badge.tap_action !== "none";
+    return html`
+      <span
+        class="header-badge ${clickable ? "clickable" : ""}"
+        style=${color ? `--sct-badge-color: ${color};` : ""}
+        title=${stateObj.attributes.friendly_name ?? badge.entity}
+        @click=${clickable ? () => this._moreInfo(badge.entity) : null}
+      >
+        ${icon ? html`<ha-icon .icon=${icon}></ha-icon>` : nothing}
+        ${badge.name ? html`<span class="header-badge-name">${badge.name}</span>` : nothing}
+        <span class="header-badge-state">${String(text).toUpperCase()}</span>
+      </span>
+    `;
+  }
+
+  // Accepts any CSS color, or a Home Assistant color name ("yellow",
+  // "light-blue", …) which maps to the theme's --<name>-color variable.
+  private _cssColor(color?: string): string | undefined {
+    if (!color) return undefined;
+    if (/^[a-z]+(-[a-z]+)*$/.test(color)) return `var(--${color}-color, ${color})`;
+    return color;
+  }
+
+  private _moreInfo(entityId: string): void {
+    this.dispatchEvent(new CustomEvent("hass-more-info", {
+      detail: { entityId },
+      bubbles: true,
+      composed: true,
+    }));
   }
 
   // ── Main row: current | +/- | outside+set panel ──────────────────────
@@ -1116,6 +1162,30 @@ export class SimpleCompactThermostatCard extends LitElement {
       font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.1em;
+    }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: 4px;
+      padding-left: 12px;
+      border-left: 1px solid var(--sct-border);
+      color: var(--sct-badge-color, var(--sct-text-secondary));
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+    .header-badge.clickable {
+      cursor: pointer;
+    }
+    .header-badge ha-icon {
+      --mdc-icon-size: 15px;
+      color: var(--sct-badge-color, var(--sct-text-secondary));
+    }
+    .header-badge-name {
+      color: var(--sct-text-secondary);
+      font-weight: 500;
     }
 
     /* ── Main row ───────────────────────────────────────────────────── */
