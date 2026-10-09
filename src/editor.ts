@@ -16,6 +16,10 @@ const LABELS: Record<string, string> = {
   room_sensor_columns:          "Room sensor columns",
   show_preset:                  "Show preset dropdown",
   show_hvac_status:             "Show HVAC ✦ MODE in header",
+  show_setpoint_controls:       "Show +/- setpoint buttons",
+  show_setpoint:                "Show setpoint cell",
+  current_temp_entity:          "Current temperature entity (override)",
+  outside_humidity_entity:      "Outside humidity entity",
   show_fan:                     "Show fan buttons",
   show_sensor_data:             "Show room sensors",
   show_co2:                     "Show CO₂",
@@ -41,6 +45,14 @@ const SCHEMA = [
     selector: { entity: { domain: ["sensor", "weather"] } },
   },
   {
+    name: "outside_humidity_entity",
+    selector: { entity: { domain: ["sensor"] } },
+  },
+  {
+    name: "current_temp_entity",
+    selector: { entity: { domain: ["sensor"] } },
+  },
+  {
     type: "grid",
     name: "",
     schema: [
@@ -55,6 +67,8 @@ const SCHEMA = [
       { name: "show_preset",      selector: { boolean: {} } },
       { name: "show_fan",         selector: { boolean: {} } },
       { name: "show_hvac_status", selector: { boolean: {} } },
+      { name: "show_setpoint_controls", selector: { boolean: {} } },
+      { name: "show_setpoint",    selector: { boolean: {} } },
       { name: "show_sensor_data", selector: { boolean: {} } },
     ],
   },
@@ -94,6 +108,8 @@ const DEFAULTS: Record<string, unknown> = {
   show_preset:                  true,
   show_fan:                     true,
   show_hvac_status:             true,
+  show_setpoint_controls:       true,
+  show_setpoint:                true,
   show_sensor_data:             true,
   show_co2:                     true,
   show_humidity:                true,
@@ -116,6 +132,7 @@ const ADVANCED_KEYS = [
   "hvac_modes",
   "fan_modes",
   "header_badges",
+  "mode_labels",
 ] as const;
 
 @customElement(EDITOR_NAME)

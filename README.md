@@ -86,6 +86,11 @@ Everything else — outside temp, room sensors, preset list, fan modes — is di
 | `show_preset`         | boolean   | `true`                     | Show the preset dropdown.                                         |
 | `show_fan`            | boolean   | `true`                     | Show the fan buttons.                                             |
 | `show_hvac_status`    | boolean   | `true`                     | Show the built-in `HVAC ✦ MODE` status in the header. Set `false` to show only your `header_badges` there. |
+| `show_setpoint_controls` | boolean | `true`                    | Show the `+` / `−` setpoint buttons. `false` makes the card read-only for the setpoint. |
+| `show_setpoint`       | boolean   | `true`                     | Show the SET cell in the right-hand panel.                        |
+| `current_temp_entity` | string    | (climate entity)           | A `sensor.*` whose value replaces the big current temperature — e.g. a `min_max` mean of all room sensors. |
+| `outside_humidity_entity` | string | (none)                    | A `sensor.*` with relative humidity, shown as an extra cell under the outside temperature. |
+| `mode_labels`         | object    | `{}`                       | `{ heat: "Winter", off: "Summer" }` — relabel HVAC modes in the header and the mode strip (the modes themselves are unchanged). |
 | `step`                | number    | `1`                        | Setpoint increment per `−` / `+` press, in the entity's unit.     |
 | `show_sensor_data`    | boolean   | `true`                     | Show the auto-discovered room-sensor row.                         |
 | `room_sensor_columns` | number    | `4`                        | Number of columns in the room-sensor grid.                        |

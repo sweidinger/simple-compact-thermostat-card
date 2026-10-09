@@ -88,6 +88,8 @@ export class SimpleCompactThermostatCard extends LitElement {
       show_preset: true,
       show_fan: true,
       show_hvac_status: true,
+      show_setpoint_controls: true,
+      show_setpoint: true,
       step: 1,
       show_sensor_data: true,
       room_sensor_columns: 4,
@@ -699,10 +701,15 @@ export class SimpleCompactThermostatCard extends LitElement {
     });
   }
 
+  // Label for an HVAC mode: config.mode_labels wins, then the built-in table.
+  private _modeLabel(mode: string): string {
+    return this._config.mode_labels?.[mode] ?? MODE_LABELS[mode] ?? mode;
+  }
+
   // ── Header ───────────────────────────────────────────────────────────
   private _renderHeader(stateObj: any): TemplateResult {
     const active = this._optimistic.hvac_mode?.value ?? stateObj.state;
-    const label = MODE_LABELS[active] ?? active;
+    const label = this._modeLabel(active);
     const showHvac = this._config.show_hvac_status !== false;
     const badges = this._config.header_badges ?? [];
     if (!showHvac && badges.length === 0) return html``;
@@ -764,7 +771,14 @@ export class SimpleCompactThermostatCard extends LitElement {
   // ── Main row: current | +/- | outside+set panel ──────────────────────
   private _renderMainRow(stateObj: any): TemplateResult {
     const unit = this._unit();
-    const current = stateObj.attributes.current_temperature;
+    const current = this._config.current_temp_entity
+      ? this._readTempFromEntity(this._config.current_temp_entity)
+      : stateObj.attributes.current_temperature;
+    const showControls = this._config.show_setpoint_controls !== false;
+    const showSet = this._config.show_setpoint !== false;
+    const outsideHumEntity = this._config.outside_humidity_entity;
+    const outsideHumState = outsideHumEntity ? this.hass.states[outsideHumEntity] : null;
+    const outsideHum = outsideHumState ? parseFloat(outsideHumState.state) : NaN;
     const activeHvac = this._optimistic.hvac_mode?.value ?? stateObj.state;
     const isOff = activeHvac === "off";
     const outsideValue = this._getOutsideTemp();
@@ -790,20 +804,22 @@ export class SimpleCompactThermostatCard extends LitElement {
           ${this._renderSubStats()}
         </div>
 
-        <div class="adjust-cell">
-          <button
-            class="round-btn"
-            ?disabled=${isOff}
-            @click=${() => this._adjustSetpoint(1)}
-            aria-label="Increase setpoint"
-          >+</button>
-          <button
-            class="round-btn"
-            ?disabled=${isOff}
-            @click=${() => this._adjustSetpoint(-1)}
-            aria-label="Decrease setpoint"
-          >−</button>
-        </div>
+        ${showControls ? html`
+          <div class="adjust-cell">
+            <button
+              class="round-btn"
+              ?disabled=${isOff}
+              @click=${() => this._adjustSetpoint(1)}
+              aria-label="Increase setpoint"
+            >+</button>
+            <button
+              class="round-btn"
+              ?disabled=${isOff}
+              @click=${() => this._adjustSetpoint(-1)}
+              aria-label="Decrease setpoint"
+            >−</button>
+          </div>
+        ` : html`<div class="adjust-cell spacer"></div>`}
 
         <div class="right-panel">
           <div class="right-cell">
@@ -812,7 +828,15 @@ export class SimpleCompactThermostatCard extends LitElement {
             </div>
             <span class="corner-label">outside</span>
           </div>
-          ${isDual
+          ${outsideHumEntity ? html`
+            <div class="right-cell">
+              <div class="med-temp">
+                ${!isNaN(outsideHum) ? Math.round(outsideHum) : "—"}<span class="med-unit">%</span>
+              </div>
+              <span class="corner-label">outside rh</span>
+            </div>
+          ` : nothing}
+          ${!showSet ? nothing : isDual
             ? this._renderDualSetCell(lowVal, highVal, unit)
             : this._renderSingleSetCell(tempVal, unit)}
         </div>
@@ -870,7 +894,7 @@ export class SimpleCompactThermostatCard extends LitElement {
               style="--cell-color: ${color}; ${i > 0 ? "border-left: 1px solid var(--sct-border);" : ""}"
               @click=${() => this._setHvacMode(mode)}
             >
-              ${(MODE_LABELS[mode] ?? mode).toUpperCase()}
+              ${this._modeLabel(mode).toUpperCase()}
             </button>
           `;
         })}
@@ -1268,6 +1292,9 @@ export class SimpleCompactThermostatCard extends LitElement {
       justify-content: center;
       gap: 10px;
       padding: 0 14px;
+    }
+    .adjust-cell.spacer {
+      padding: 0 8px;
     }
     .round-btn {
       width: 42px;

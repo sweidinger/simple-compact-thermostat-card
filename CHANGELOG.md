@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 - **`show_hvac_status`** option (default `true`). Set it to `false` to drop the built-in `HVAC ✦ MODE` status from the header row, so the header shows only `header_badges` — e.g. bus link, burner and summer/winter mode for a boiler-level flow-temperature controller. The first badge then loses its leading divider. Also in the GUI editor.
+- **`current_temp_entity`** — show a sensor (e.g. a `min_max` mean of all rooms) as the big current temperature instead of the climate entity's own value.
+- **`show_setpoint_controls`** / **`show_setpoint`** — hide the `+`/`−` buttons and/or the SET cell for a read-only card.
+- **`outside_humidity_entity`** — extra right-panel cell with the outside relative humidity under the outside temperature.
+- **`mode_labels`** — relabel HVAC modes in header and mode strip (`{ heat: "Winterbetrieb", off: "Sommerbetrieb" }`); the underlying modes are unchanged.
 
 ## [0.6.0] — 2026-10-09
 

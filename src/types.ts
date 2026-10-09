@@ -35,6 +35,18 @@ export interface SimpleCompactThermostatConfig extends LovelaceCardConfig {
   // header shows only header_badges (e.g. when the card drives a flow-
   // temperature controller and the HVAC mode duplicates a badge).
   show_hvac_status?: boolean;
+  // Show a sensor's value as the big "current" temperature instead of the
+  // climate entity's current_temperature (e.g. a min_max mean of all rooms).
+  current_temp_entity?: string;
+  // Default true. false hides the +/- setpoint buttons (read-only setpoint).
+  show_setpoint_controls?: boolean;
+  // Default true. false hides the SET cell in the right panel.
+  show_setpoint?: boolean;
+  // Humidity sensor shown as an extra cell under the outside temperature.
+  outside_humidity_entity?: string;
+  // Override the label of any HVAC mode in the header and the mode strip,
+  // e.g. { heat: "Winterbetrieb", off: "Sommerbetrieb" }.
+  mode_labels?: Record<string, string>;
 }
 
 // Appearance overrides for one state of a header badge.
