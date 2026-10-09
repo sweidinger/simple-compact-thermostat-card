@@ -79,6 +79,19 @@ export interface RoomStat {
 
 // Manual room-sensor entry in YAML — lets users use any temperature sensor,
 // not just ones the climate integration exposes in available_sensors.
+// A small status icon in a room cell (window open, light on, …). Shown while
+// the entity is in one of `states` (default: on/open/playing/home), hidden
+// otherwise — unless `always` is set, which keeps a dimmed icon when inactive.
+export interface RoomIndicator {
+  entity: string;                // binary_sensor.*, light.*, switch.*, cover.*, …
+  icon?: string;                 // mdi:… shown while active (default: entity icon)
+  icon_off?: string;             // mdi:… shown while inactive (only with always: true)
+  color?: string;                // CSS color or HA color name while active (default: amber)
+  states?: string[];             // States counted as active (default on/open/playing/home)
+  always?: boolean;              // Keep the icon visible (dimmed) while inactive
+  label?: string;                // Tooltip text (default: entity friendly name)
+}
+
 export interface ManualRoomSensor {
   name: string;                  // Display label + matched against active_sensors for highlighting
   entity: string;                // sensor.* providing temperature
@@ -86,6 +99,7 @@ export interface ManualRoomSensor {
   humidity_entity?: string;      // sensor.* for relative humidity, shown next to the temp (optional)
   stats?: RoomStat[];            // Extra measurements rendered in the cell (optional)
   tooltip_sensors?: RoomStat[];  // Measurements shown only in the hover tooltip (optional)
+  indicators?: RoomIndicator[];  // Status icons (window, light, …) in the cell corner (optional)
   short?: string;                // Shorter label for the cell (optional)
 }
 
@@ -97,5 +111,6 @@ export interface DiscoveredSensor {
   humidityEntity?: string;
   stats?: RoomStat[];
   tooltipSensors?: RoomStat[];
+  indicators?: RoomIndicator[];
   short?: string;
 }

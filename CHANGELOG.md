@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - **`show_setpoint_controls`** / **`show_setpoint`** — hide the `+`/`−` buttons and/or the SET cell for a read-only card.
 - **`outside_humidity_entity`** — extra right-panel cell with the outside relative humidity under the outside temperature.
 - **`mode_labels`** — relabel HVAC modes in header and mode strip (`{ heat: "Winterbetrieb", off: "Sommerbetrieb" }`); the underlying modes are unchanged.
+- **Room `indicators`** — per-room status icons (window open, light on, …) in the cell corner, lit while the entity is active, hidden (or dimmed with `always: true`) otherwise; tap opens more-info.
 
 ## [0.6.0] — 2026-10-09
 

@@ -10,7 +10,7 @@ import {
   FAN_ICONS,
   FAN_LABELS,
 } from "./const";
-import { DiscoveredSensor, HeaderBadge, RoomStat, SimpleCompactThermostatConfig } from "./types";
+import { DiscoveredSensor, HeaderBadge, RoomStat, SimpleCompactThermostatConfig, RoomIndicator } from "./types";
 
 // Side-effect import: registers <simple-compact-thermostat-editor> so the
 // dashboard editor can find it via getConfigElement() below. We do this here
@@ -243,6 +243,7 @@ export class SimpleCompactThermostatCard extends LitElement {
               style=${isLastCol ? "border-right: none;" : ""}
               title=${this._cellTooltip(s, isOccupied)}
             >
+              ${this._renderCellIndicators(s)}
               <div class="sensor-temp">
                 ${isNaN(raw) ? "—" : this._round(raw)}<span class="sensor-unit">°${unit}</span>${this._renderCellHumidity(s)}
               </div>
@@ -253,6 +254,36 @@ export class SimpleCompactThermostatCard extends LitElement {
         })}
       </div>
     `;
+  }
+
+  // Status icons (window open, light on, …) in the top-right corner of a cell.
+  private _renderCellIndicators(s: DiscoveredSensor): TemplateResult | typeof nothing {
+    const inds = s.indicators ?? [];
+    if (inds.length === 0) return nothing;
+    const DEFAULT_ACTIVE = ["on", "open", "opening", "playing", "home", "heating", "cleaning"];
+    const items = inds.map(ind => {
+      const so = this.hass.states[ind.entity];
+      if (!so || so.state === "unavailable" || so.state === "unknown") return null;
+      const active = (ind.states ?? DEFAULT_ACTIVE).includes(so.state);
+      if (!active && !ind.always) return null;
+      const icon = active
+        ? (ind.icon ?? so.attributes?.icon)
+        : (ind.icon_off ?? ind.icon ?? so.attributes?.icon);
+      if (!icon) return null;
+      const color = active ? this._cssColor(ind.color ?? "amber") : undefined;
+      const title = ind.label ?? so.attributes?.friendly_name ?? ind.entity;
+      return html`
+        <ha-icon
+          class="sensor-indicator ${active ? "active" : ""}"
+          .icon=${icon}
+          title=${title}
+          style=${color ? `color: ${color};` : ""}
+          @click=${(e: Event) => { e.stopPropagation(); this._moreInfo(ind.entity); }}
+        ></ha-icon>
+      `;
+    }).filter(x => x !== null);
+    if (items.length === 0) return nothing;
+    return html`<div class="sensor-indicators">${items}</div>`;
   }
 
   // Small "47%" chip rendered right after the room temperature.
@@ -332,6 +363,7 @@ export class SimpleCompactThermostatCard extends LitElement {
       humidityEntity: m.humidity_entity,
       stats: cleanStats(m.stats),
       tooltipSensors: cleanStats(m.tooltip_sensors),
+      indicators: cleanStats(m.indicators) as RoomIndicator[] | undefined,
       short: m.short,
     };
   }
@@ -1611,6 +1643,7 @@ export class SimpleCompactThermostatCard extends LitElement {
       border-top: 1px solid var(--sct-border);
     }
     .sensor-cell {
+      position: relative;
       padding: 8px 10px;
       border-right: 1px solid var(--sct-border);
       display: flex;
@@ -1619,6 +1652,24 @@ export class SimpleCompactThermostatCard extends LitElement {
       min-width: 0;
       background: transparent;
       transition: background 180ms;
+    }
+    .sensor-indicators {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .sensor-indicator {
+      --mdc-icon-size: 16px;
+      color: var(--sct-text-secondary);
+      opacity: 0.35;
+      cursor: pointer;
+    }
+    .sensor-indicator.active {
+      opacity: 1;
+      filter: drop-shadow(0 0 4px currentColor);
     }
     .sensor-cell.active {
       background: var(--sct-hover-bg);

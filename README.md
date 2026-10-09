@@ -91,6 +91,7 @@ Everything else — outside temp, room sensors, preset list, fan modes — is di
 | `current_temp_entity` | string    | (climate entity)           | A `sensor.*` whose value replaces the big current temperature — e.g. a `min_max` mean of all room sensors. |
 | `outside_humidity_entity` | string | (none)                    | A `sensor.*` with relative humidity, shown as an extra cell under the outside temperature. |
 | `mode_labels`         | object    | `{}`                       | `{ heat: "Winter", off: "Summer" }` — relabel HVAC modes in the header and the mode strip (the modes themselves are unchanged). |
+| `room_sensors[].indicators` | list | (none)                   | Status icons in the room cell's corner — window open, light on, … See [Room indicators](#room-indicators). |
 | `step`                | number    | `1`                        | Setpoint increment per `−` / `+` press, in the entity's unit.     |
 | `show_sensor_data`    | boolean   | `true`                     | Show the auto-discovered room-sensor row.                         |
 | `room_sensor_columns` | number    | `4`                        | Number of columns in the room-sensor grid.                        |
@@ -124,6 +125,33 @@ sensor_excludes:
 sensor_aliases:
   "Second Bedroom Temp": "2nd BR"
 ```
+
+### Room indicators
+
+Each manual room sensor can carry `indicators`: small icons in the cell's top-right corner that light up while an entity is active (`on`, `open`, `playing`, `home`, … — override with `states`). Inactive indicators are hidden unless `always: true` keeps a dimmed icon. Tapping an icon opens the entity's more-info dialog.
+
+```yaml
+room_sensors:
+  - name: Office
+    entity: sensor.office_temperature
+    indicators:
+      - entity: binary_sensor.office_window
+        icon: mdi:window-open-variant
+        color: red
+      - entity: light.office
+        icon: mdi:lightbulb-on
+        color: amber
+```
+
+| Key        | Type     | Default                           | Description |
+|------------|----------|-----------------------------------|-------------|
+| `entity`   | string   | **required**                      | Any entity. |
+| `icon`     | string   | (entity's icon)                   | Icon while active. |
+| `icon_off` | string   | (`icon`)                          | Icon while inactive (only with `always`). |
+| `color`    | string   | `amber`                           | HA color name or CSS color while active. |
+| `states`   | string[] | `on, open, opening, playing, home, heating, cleaning` | States that count as active. |
+| `always`   | boolean  | `false`                           | Keep a dimmed icon while inactive. |
+| `label`    | string   | (friendly name)                   | Tooltip text. |
 
 ### Header badges
 
