@@ -87,6 +87,7 @@ export class SimpleCompactThermostatCard extends LitElement {
     this._config = {
       show_preset: true,
       show_fan: true,
+      show_hvac_status: true,
       step: 1,
       show_sensor_data: true,
       room_sensor_columns: 4,
@@ -702,13 +703,18 @@ export class SimpleCompactThermostatCard extends LitElement {
   private _renderHeader(stateObj: any): TemplateResult {
     const active = this._optimistic.hvac_mode?.value ?? stateObj.state;
     const label = MODE_LABELS[active] ?? active;
+    const showHvac = this._config.show_hvac_status !== false;
+    const badges = this._config.header_badges ?? [];
+    if (!showHvac && badges.length === 0) return html``;
     return html`
-      <div class="header">
-        <span class="dot"></span>
-        <span class="header-text">HVAC</span>
-        <span class="header-sep">✦</span>
-        <span class="header-mode">${label.toUpperCase()}</span>
-        ${(this._config.header_badges ?? []).map((b) => this._renderHeaderBadge(b))}
+      <div class="header ${showHvac ? "" : "no-hvac"}">
+        ${showHvac ? html`
+          <span class="dot"></span>
+          <span class="header-text">HVAC</span>
+          <span class="header-sep">✦</span>
+          <span class="header-mode">${label.toUpperCase()}</span>
+        ` : nothing}
+        ${badges.map((b) => this._renderHeaderBadge(b))}
       </div>
     `;
   }
@@ -1178,6 +1184,11 @@ export class SimpleCompactThermostatCard extends LitElement {
     }
     .header-badge.clickable {
       cursor: pointer;
+    }
+    .header.no-hvac .header-badge:first-child {
+      margin-left: 0;
+      padding-left: 0;
+      border-left: none;
     }
     .header-badge ha-icon {
       --mdc-icon-size: 15px;

@@ -1,4 +1,4 @@
-export const CARD_VERSION = "0.6.0";
+export const CARD_VERSION = "0.6.1";
 export const CARD_NAME    = "simple-compact-thermostat";
 
 // Default mode colors — all routed through CSS variables so themes and

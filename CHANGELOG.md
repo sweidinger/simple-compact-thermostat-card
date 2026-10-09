@@ -4,6 +4,11 @@ All notable changes to **Simple Compact Thermostat** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.6.1] — 2026-10-09
+
+### Added
+- **`show_hvac_status`** option (default `true`). Set it to `false` to drop the built-in `HVAC ✦ MODE` status from the header row, so the header shows only `header_badges` — e.g. bus link, burner and summer/winter mode for a boiler-level flow-temperature controller. The first badge then loses its leading divider. Also in the GUI editor.
+
 ## [0.6.0] — 2026-10-09
 
 ### Added

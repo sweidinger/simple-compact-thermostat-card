@@ -15,6 +15,7 @@ const LABELS: Record<string, string> = {
   step:                         "Setpoint step",
   room_sensor_columns:          "Room sensor columns",
   show_preset:                  "Show preset dropdown",
+  show_hvac_status:             "Show HVAC ✦ MODE in header",
   show_fan:                     "Show fan buttons",
   show_sensor_data:             "Show room sensors",
   show_co2:                     "Show CO₂",
@@ -53,6 +54,7 @@ const SCHEMA = [
     schema: [
       { name: "show_preset",      selector: { boolean: {} } },
       { name: "show_fan",         selector: { boolean: {} } },
+      { name: "show_hvac_status", selector: { boolean: {} } },
       { name: "show_sensor_data", selector: { boolean: {} } },
     ],
   },
@@ -91,6 +93,7 @@ const SCHEMA = [
 const DEFAULTS: Record<string, unknown> = {
   show_preset:                  true,
   show_fan:                     true,
+  show_hvac_status:             true,
   show_sensor_data:             true,
   show_co2:                     true,
   show_humidity:                true,

@@ -85,6 +85,7 @@ Everything else — outside temp, room sensors, preset list, fan modes — is di
 | `fan_modes`           | string[]  | `["auto", "on"]`           | Which fan modes to show as buttons.                               |
 | `show_preset`         | boolean   | `true`                     | Show the preset dropdown.                                         |
 | `show_fan`            | boolean   | `true`                     | Show the fan buttons.                                             |
+| `show_hvac_status`    | boolean   | `true`                     | Show the built-in `HVAC ✦ MODE` status in the header. Set `false` to show only your `header_badges` there. |
 | `step`                | number    | `1`                        | Setpoint increment per `−` / `+` press, in the entity's unit.     |
 | `show_sensor_data`    | boolean   | `true`                     | Show the auto-discovered room-sensor row.                         |
 | `room_sensor_columns` | number    | `4`                        | Number of columns in the room-sensor grid.                        |
@@ -121,7 +122,7 @@ sensor_aliases:
 
 ### Header badges
 
-Show any entity's state right in the header row, separated from `HVAC ✦ MODE` by a thin divider — for example a summer/winter mode sensor, a window contact or an away flag. Each badge can switch icon, color and text per state. Tapping a badge opens the entity's more-info dialog (set `tap_action: none` to disable).
+Show any entity's state right in the header row, separated from `HVAC ✦ MODE` by a thin divider — for example a summer/winter mode sensor, a window contact or an away flag. Each badge can switch icon, color and text per state. Tapping a badge opens the entity's more-info dialog (set `tap_action: none` to disable). With `show_hvac_status: false` the header consists of the badges alone — handy when the climate entity is a flow-temperature controller and its HVAC mode would only duplicate a badge.
 
 ```yaml
 header_badges:

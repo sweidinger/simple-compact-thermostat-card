@@ -31,6 +31,10 @@ export interface SimpleCompactThermostatConfig extends LovelaceCardConfig {
 
   // Extra status badges rendered in the header next to "HVAC ✦ MODE"
   header_badges?: HeaderBadge[];
+  // Default true. Set false to hide the built-in "HVAC ✦ MODE" status so the
+  // header shows only header_badges (e.g. when the card drives a flow-
+  // temperature controller and the HVAC mode duplicates a badge).
+  show_hvac_status?: boolean;
 }
 
 // Appearance overrides for one state of a header badge.
